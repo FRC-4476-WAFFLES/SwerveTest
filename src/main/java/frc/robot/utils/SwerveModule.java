@@ -4,8 +4,10 @@
 
 package frc.robot.utils;
 
-import com.revrobotics.CANSparkMax;
-import com.revrobotics.CANSparkMaxLowLevel.MotorType;
+
+
+import com.ctre.phoenix.motorcontrol.ControlMode;
+import com.ctre.phoenix.motorcontrol.can.TalonFX;
 
 import frc.robot.Constants.SwerveConstants;
 
@@ -14,14 +16,14 @@ public class SwerveModule {
     public final SwerveConstants constants;
 
     /** The motor controlling the angle of the swerve module. */
-    private final CANSparkMax angleMotor;
+    private final TalonFX angleMotor;
 
     /** The motor controlling the speed of the swerve module. */
-    private final CANSparkMax driveMotor;
+    private final TalonFX driveMotor;
 
     public SwerveModule(SwerveConstants constants) {
-        this.angleMotor = new CANSparkMax(constants.angleMotor, MotorType.kBrushless);
-        this.driveMotor = new CANSparkMax(constants.driveMotor, MotorType.kBrushless);
+        this.angleMotor = new TalonFX(constants.angleMotor);
+        this.driveMotor = new TalonFX(constants.driveMotor);
         this.constants = constants;
     }
 
@@ -33,11 +35,15 @@ public class SwerveModule {
     public void drive(double angle, double speed) {
         // TODO: Point this swerve module in the desired direction, and set
         // the motor speed.
+        driveMotor.set(ControlMode.PercentOutput, speed);
+        angle += constants.calibration;
+        
+        angleMotor.set(ControlMode.Position, angle);
     }
 
     /** Stops all motors from running. */
     public void stop() {
-        this.driveMotor.stopMotor();
-        this.angleMotor.stopMotor();
+        this.driveMotor.set(ControlMode.PercentOutput, 0);
+        this.angleMotor.set(ControlMode.PercentOutput, 0);
     }
 }

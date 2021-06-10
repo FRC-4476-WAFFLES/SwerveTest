@@ -7,7 +7,9 @@ package frc.robot.subsystems;
 import java.util.ArrayList;
 
 import edu.wpi.first.wpilibj.geometry.Translation2d;
+import edu.wpi.first.wpilibj.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.kinematics.SwerveDriveKinematics;
+import edu.wpi.first.wpilibj.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.SwerveConstants;
@@ -36,7 +38,7 @@ public class DriveSubsystem extends SubsystemBase {
     this.modules = (SwerveModule[]) modules.toArray();
 
     // Set the default command to the teleoperated command.
-    this.setDefaultCommand(new DriveTeleop(this));
+    
   }
 
   /** This method will be called once per scheduler run. */
@@ -47,8 +49,11 @@ public class DriveSubsystem extends SubsystemBase {
   /** Drive the robot in teleoperated mode, relative to the current robot
    * position. */
   public void robotCentricDrive(double forward, double right, double rotation) {
-    // TODO: Use kinematics to calculate the motion of each swerve module, and
-    // tell each swerve module to move there.
+    ChassisSpeeds chassisSpeeds = new ChassisSpeeds(forward, right, rotation);
+    SwerveModuleState[] swerveModuleState = kinematics.toSwerveModuleStates(chassisSpeeds);
+    for(int x=0; x<modules.length; x++){
+      modules[x].drive(swerveModuleState[x].angle.getRadians(), swerveModuleState[x].speedMetersPerSecond);
+    }
   }
 
   /** Stop all motors from running. */

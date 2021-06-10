@@ -4,13 +4,16 @@
 
 package frc.robot.commands.drive;
 
+import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.subsystems.DriveSubsystem;
 
 public class DriveTeleop extends CommandBase {
-  DriveSubsystem driveSubsystem;
+  private final DriveSubsystem driveSubsystem;
+  private final Joystick leftJoystick;
+  private final Joystick rightJoystick;
 
-  public DriveTeleop(DriveSubsystem driveSubsystem) {
+  public DriveTeleop(DriveSubsystem driveSubsystem, Joystick leftJoystick, Joystick rightJoystick) {
     // Tell the scheduler that no other drive commands can be running while
     // this one is running.
     addRequirements(driveSubsystem);
@@ -18,6 +21,8 @@ public class DriveTeleop extends CommandBase {
     // Save driveSubsystem to a field so that it can be used by the other 
     // methods.
     this.driveSubsystem = driveSubsystem;
+    this.leftJoystick = leftJoystick;
+    this.rightJoystick = rightJoystick;
   }
 
   // Called when the command is initially scheduled.
@@ -27,8 +32,7 @@ public class DriveTeleop extends CommandBase {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    // TODO: Take operator input, and pass it to driveSubsystem.
-    // driveSubsystem.robotCentricDrive(forward, right, rotation);
+    driveSubsystem.robotCentricDrive(leftJoystick.getY(), leftJoystick.getX(), rightJoystick.getY());
   }
 
   // Called once the command ends or is interrupted.

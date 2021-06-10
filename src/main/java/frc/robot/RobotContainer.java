@@ -5,8 +5,10 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj.GenericHID;
+import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.commands.drive.DriveTeleop;
 import frc.robot.subsystems.DriveSubsystem;
 
 /**
@@ -18,9 +20,13 @@ import frc.robot.subsystems.DriveSubsystem;
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
   private final DriveSubsystem driveSubsystem = new DriveSubsystem();
+  private final Joystick leftJoystick = new Joystick(0);
+  private final Joystick rightJoystick = new Joystick(1);
+  private final DriveTeleop swerve = new DriveTeleop(driveSubsystem, leftJoystick, rightJoystick);
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
+    driveSubsystem.setDefaultCommand(swerve);
     // Configure the button bindings
     configureButtonBindings();
   }
