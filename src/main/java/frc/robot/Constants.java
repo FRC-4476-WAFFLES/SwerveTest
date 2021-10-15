@@ -35,7 +35,7 @@ public final class Constants {
         /** The CAN address of the module's drive motor. */
         public final int driveMotor;
 
-        public final double CPR = 2150.8; // Encoder ticks per wheel rotation
+        public final double CPR = 2048; // Encoder ticks per wheel rotation
         public final double WHEEL_DIAMETER = 101.6; // Wheel diameter in millimeters
         public final double MM_PER_TICK = WHEEL_DIAMETER * 3.141592 / CPR; // Wheel distance traveled per encoder tick in millimeters
         public final double METERS_TO_TICKS = (1 / MM_PER_TICK) * 1000; // Convert meters per second to ticks per second
@@ -60,9 +60,9 @@ public final class Constants {
     }
 
     public static final SwerveConstants swerveModules[] = new SwerveConstants[] {
-        new SwerveConstants(new Translation2d(0.0, 0.0), 0, 1, 2),
-        new SwerveConstants(new Translation2d(0.0, 0.0), 0, 3, 4),
-        new SwerveConstants(new Translation2d(0.0, 0.0), 0, 5, 6),
-        new SwerveConstants(new Translation2d(0.0, 0.0), 0, 7, 8),
+        new SwerveConstants(new Translation2d(0.2794, -0.2794), 0, 8, 7),
+        new SwerveConstants(new Translation2d(0.2794, 0.2794), 0, 6, 5),
+        new SwerveConstants(new Translation2d(-0.2794, 0.2794), 0, 4, 3),
+        new SwerveConstants(new Translation2d(-0.2794, -0.2794), 0, 2, 1),
     };
 }
