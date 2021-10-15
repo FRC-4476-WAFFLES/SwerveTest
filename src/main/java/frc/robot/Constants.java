@@ -35,12 +35,28 @@ public final class Constants {
         /** The CAN address of the module's drive motor. */
         public final int driveMotor;
 
+        public final double CPR = 2150.8; // Encoder ticks per wheel rotation
+        public final double WHEEL_DIAMETER = 101.6; // Wheel diameter in millimeters
+        public final double MM_PER_TICK = WHEEL_DIAMETER * 3.141592 / CPR; // Wheel distance traveled per encoder tick in millimeters
+        public final double METERS_TO_TICKS = (1 / MM_PER_TICK) * 1000; // Convert meters per second to ticks per second
+
+        // The number of ticks of the motor's built-in encoder per revolution of the steering module
+        public final double ticksPerSteeringRevolution = 26214.4;
+        // Convert degrees to motor ticks
+        public final double steeringDegreesToTicks = ticksPerSteeringRevolution / 360;
+
         public SwerveConstants(Translation2d position, double calibration, int angleMotor, int driveMotor) {
             this.position = position;
             this.calibration = calibration;
             this.angleMotor = angleMotor;
             this.driveMotor = driveMotor;
         }
+    }
+
+    public static final class MPUConstants{
+        public final double calibration = 0;
+        public final int address = 0x68;
+        public MPUConstants(){}
     }
 
     public static final SwerveConstants swerveModules[] = new SwerveConstants[] {

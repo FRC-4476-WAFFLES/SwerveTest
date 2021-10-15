@@ -9,6 +9,8 @@ package frc.robot.utils;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
 
+import edu.wpi.first.wpilibj.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.kinematics.SwerveModuleState;
 import frc.robot.Constants.SwerveConstants;
 
 public class SwerveModule {
@@ -35,10 +37,20 @@ public class SwerveModule {
     public void drive(double angle, double speed) {
         // TODO: Point this swerve module in the desired direction, and set
         // the motor speed.
-        driveMotor.set(ControlMode.PercentOutput, speed);
+        driveMotor.set(ControlMode.Velocity, speed * constants.METERS_TO_TICKS);
         angle += constants.calibration;
-        
-        angleMotor.set(ControlMode.Position, angle);
+        angleMotor.set(ControlMode.Position, angle * constants.steeringDegreesToTicks);
+    }
+
+    /**
+     * Get the current state of a swerve module
+     * @return SwerveModuleState representing the current speed and angle of the module
+     */
+    
+    public SwerveModuleState getState(){
+        return new SwerveModuleState(
+            driveMotor.getSelectedSensorVelocity() / constants.METERS_TO_TICKS, 
+            Rotation2d.fromDegrees(angleMotor.getSelectedSensorPosition() / constants.steeringDegreesToTicks));
     }
 
     /** Stops all motors from running. */

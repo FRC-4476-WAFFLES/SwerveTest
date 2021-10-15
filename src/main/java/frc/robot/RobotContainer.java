@@ -7,6 +7,7 @@ package frc.robot;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.commands.drive.DriveTeleop;
 import frc.robot.subsystems.DriveSubsystem;
@@ -29,6 +30,7 @@ public class RobotContainer {
     driveSubsystem.setDefaultCommand(swerve);
     // Configure the button bindings
     configureButtonBindings();
+    SmartDashboard.putNumber("test", 5);
   }
 
   /**
