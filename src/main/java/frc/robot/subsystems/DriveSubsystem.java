@@ -6,9 +6,6 @@ package frc.robot.subsystems;
 
 import java.util.ArrayList;
 
-import com.ctre.phoenix.motorcontrol.ControlMode;
-import com.ctre.phoenix.motorcontrol.can.TalonFX;
-
 import edu.wpi.first.wpilibj.geometry.Translation2d;
 import edu.wpi.first.wpilibj.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.kinematics.SwerveDriveKinematics;
@@ -93,7 +90,7 @@ public class DriveSubsystem extends SubsystemBase {
       double speed = swerveModuleState[x].speedMetersPerSecond;
       if(Math.abs(rotation) > 0){
         if(x % 2 == 0){
-          speed *= -1;
+          angle += 180;
         }
       }
       modules[x].drive(angle, speed);
