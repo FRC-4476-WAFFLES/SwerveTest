@@ -32,7 +32,7 @@ public class DriveTeleop extends CommandBase {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    driveSubsystem.robotCentricDrive(leftJoystick.getY(), leftJoystick.getX(), rightJoystick.getX());
+    driveSubsystem.fieldCentricDrive(leftJoystick.getY(), leftJoystick.getX(), rightJoystick.getX());
   }
 
   // Called once the command ends or is interrupted.

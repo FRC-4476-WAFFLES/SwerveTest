@@ -11,7 +11,6 @@ import com.ctre.phoenix.motorcontrol.can.TalonFX;
 
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.kinematics.SwerveModuleState;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants.SwerveConstants;
 
 public class SwerveModule {
@@ -36,23 +35,21 @@ public class SwerveModule {
      * @param speed The speed of the drive motor. [Range 0..1]
      */
     public void drive(double angle, double speed) {
-        // TODO: Point this swerve module in the desired direction, and set
-        // the motor speed.
-        SmartDashboard.putNumber("Speed", speed);
-        SmartDashboard.putNumber("Angle", angle);
         driveMotor.set(ControlMode.PercentOutput, speed);
-        //angleMotor.set(ControlMode.PercentOutput, angle / 10);
-        //angle += constants.calibration;
         double currentAngle = angleMotor.getSelectedSensorPosition() / 72.81;
         currentAngle = currentAngle % 360;
         
-        angle *= -1;
+        angle *= 1;
         double turnSpeed = 0;
+
+        if (angle - currentAngle > 180){
+            angle -= 360;
+        }
         
-        if (currentAngle + 5 < angle){
-            turnSpeed = (angle - currentAngle) / 180;
-        } else if(currentAngle - 5 > angle){
-            turnSpeed = (angle - currentAngle) / 180;
+        if (currentAngle + 2 < angle){
+            turnSpeed = (angle - currentAngle) / 120;
+        } else if(currentAngle - 2 > angle){
+            turnSpeed = (angle - currentAngle) / 120;
         } else {
             turnSpeed = 0;
         }
@@ -64,7 +61,6 @@ public class SwerveModule {
         }
         
         angleMotor.set(ControlMode.PercentOutput, turnSpeed);
-        SmartDashboard.putNumber("Current Angle", currentAngle);
     }
 
     /**

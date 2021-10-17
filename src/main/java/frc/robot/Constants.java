@@ -60,9 +60,9 @@ public final class Constants {
     }
 
     public static final SwerveConstants swerveModules[] = new SwerveConstants[] {
-        new SwerveConstants(new Translation2d(0.2794, -0.2794), 0, 8, 7),
-        new SwerveConstants(new Translation2d(0.2794, 0.2794), 0, 6, 5),
-        new SwerveConstants(new Translation2d(-0.2794, 0.2794), 0, 4, 3),
-        new SwerveConstants(new Translation2d(-0.2794, -0.2794), 0, 2, 1),
+        new SwerveConstants(new Translation2d(-0.2794, -0.2794), 0, 8, 7),
+        new SwerveConstants(new Translation2d(0.2794, -0.2794), 0, 6, 5),
+        new SwerveConstants(new Translation2d(0.2794, 0.2794), 0, 4, 3),
+        new SwerveConstants(new Translation2d(-0.2794, 0.2794), 0, 2, 1),
     };
 }

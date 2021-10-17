@@ -79,29 +79,35 @@ public class DriveSubsystem extends SubsystemBase {
       rotation = 0;
     }
     forward /= -4;
-    right /= 4;
-    rotation /= 4;
+    right /= -4;
+    rotation /= -2;
     
-    SmartDashboard.putNumber("X", forward);
     ChassisSpeeds chassisSpeeds = new ChassisSpeeds(forward, right, rotation);
     SwerveModuleState[] swerveModuleState = kinematics.toSwerveModuleStates(chassisSpeeds);
+    SmartDashboard.putNumber("Gyro", gyro.getHeading());
     for(int x=0; x<modules.length; x++){
-      double angle = swerveModuleState[x].angle.getDegrees();
-      double speed = swerveModuleState[x].speedMetersPerSecond;
-      if(Math.abs(rotation) > 0){
-        if(x % 2 == 0){
-          angle += 180;
-        }
-      }
-      modules[x].drive(angle, speed);
+      modules[x].drive(swerveModuleState[x].angle.getDegrees(), swerveModuleState[x].speedMetersPerSecond);
     }
   }
 
   /** Drive the robot in teleoperated mode, relative to the field. */
   public void fieldCentricDrive(double forward, double right, double rotation) {
-    SmartDashboard.putNumber("X", forward);
+    if (Math.abs(forward) < .1){
+      forward = 0;
+    }
+    if(Math.abs(right) < .1){
+      right = 0;
+    }
+    if(Math.abs(rotation) < .1){
+      rotation = 0;
+    }
+    forward /= -4;
+    right /= -4;
+    rotation /= -2;
+    
     ChassisSpeeds chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(forward, right, rotation, gyro.getHeadingAsRotation2d());
     SwerveModuleState[] swerveModuleState = kinematics.toSwerveModuleStates(chassisSpeeds);
+    SmartDashboard.putNumber("Gyro", gyro.getHeading());
     for(int x=0; x<modules.length; x++){
       modules[x].drive(swerveModuleState[x].angle.getDegrees(), swerveModuleState[x].speedMetersPerSecond);
     }
