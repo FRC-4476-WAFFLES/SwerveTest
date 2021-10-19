@@ -8,19 +8,19 @@ import frc.robot.Constants.MPUConstants;
 public class MPU {
     private final MPUConstants constants = new MPUConstants();
     private final I2C MPU = new I2C(I2C.Port.kOnboard, constants.address);
+    private Timer timer = new Timer();
 
     private double yaw = 0;
-
-    private Timer timer = new Timer();
     private double previousTime = 0;
 
     public MPU(){
         MPU.write(0x6B, 0);
         timer.start();
     }
+
     public double getHeading(){
         byte[] byteArray = new byte[8];
-        boolean wasAborted = MPU.read(0x47, 8, byteArray);
+        MPU.read(0x47, 8, byteArray);
         double raw = byteArray[0];
         raw += 1;
         yaw += 2 * raw * (timer.get() - previousTime);
@@ -35,7 +35,7 @@ public class MPU {
 
     public Rotation2d getHeadingAsRotation2d(){
         byte[] byteArray = new byte[8];
-        boolean wasAborted = MPU.read(0x47, 8, byteArray);
+        MPU.read(0x47, 8, byteArray);
         double raw = byteArray[0];
         raw += 1;
         yaw += 2 * raw * (timer.get() - previousTime);
