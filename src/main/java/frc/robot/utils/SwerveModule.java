@@ -10,9 +10,7 @@ import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.StatorCurrentLimitConfiguration;
 import com.ctre.phoenix.motorcontrol.VelocityMeasPeriod;
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
-import com.ctre.phoenix.motorcontrol.can.TalonFXConfiguration;
 
-import edu.wpi.first.wpilibj.controller.PIDController;
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.kinematics.SwerveModuleState;
 import frc.robot.Constants.SwerveConstants;
@@ -27,8 +25,6 @@ public class SwerveModule {
     /** The motor controlling the speed of the swerve module. */
     private final TalonFX driveMotor;
 
-    private PIDController steeringControl = new PIDController(0.1, 0, 0);
-
     public SwerveModule(SwerveConstants constants) {
         this.angleMotor = new TalonFX(constants.angleMotor);
         this.driveMotor = new TalonFX(constants.driveMotor);
@@ -38,7 +34,7 @@ public class SwerveModule {
         angleMotor.configFactoryDefault();
 
         driveMotor.configStatorCurrentLimit(new StatorCurrentLimitConfiguration(true, 60, 60, 0.03));
-        angleMotor.configStatorCurrentLimit(new StatorCurrentLimitConfiguration(true, 60, 60, 0.03));
+        angleMotor.configStatorCurrentLimit(new StatorCurrentLimitConfiguration(true, 40, 40, 0.03));
 
         driveMotor.configSelectedFeedbackSensor(FeedbackDevice.IntegratedSensor);
         angleMotor.configSelectedFeedbackSensor(FeedbackDevice.IntegratedSensor);
@@ -46,8 +42,6 @@ public class SwerveModule {
         angleMotor.configVelocityMeasurementPeriod(VelocityMeasPeriod.Period_50Ms);
         driveMotor.configVelocityMeasurementWindow(4);
         angleMotor.configVelocityMeasurementWindow(4);
-
-        angleMotor.setInverted(true);
 
         driveMotor.configVoltageCompSaturation(12);
         angleMotor.configVoltageCompSaturation(12);
@@ -57,7 +51,12 @@ public class SwerveModule {
         driveMotor.setNeutralMode(NeutralMode.Brake);
         angleMotor.setNeutralMode(NeutralMode.Brake);
 
-        
+        driveMotor.config_kP(0, 0.1);
+        driveMotor.config_kI(0, 0);
+        driveMotor.config_kD(0, 0.1);
+        angleMotor.config_kP(0, 0.5);
+        angleMotor.config_kI(0, 0);
+        angleMotor.config_kD(0, 0.1);
     }
 
     /** Drives the swerve module in a direction at a speed.
@@ -67,12 +66,11 @@ public class SwerveModule {
      */
     public void drive(double angle, double speed) {
         driveMotor.set(ControlMode.Velocity, speed);
-        double currentAngle = angleMotor.getSelectedSensorPosition() / 72.81;
-        currentAngle = currentAngle % 360;
+        double currentAngle = getState().angle.getDegrees();
         if (angle - currentAngle > 180){
             angle -= 360;
         }
-        angleMotor.set(ControlMode.Position, angle * 72.81);
+        angleMotor.set(ControlMode.Position, angle * constants.steeringDegreesToTicks);
     }
 
     /**
@@ -83,7 +81,7 @@ public class SwerveModule {
     public SwerveModuleState getState(){
         return new SwerveModuleState(
             driveMotor.getSelectedSensorVelocity() / constants.METERS_TO_TICKS, 
-            Rotation2d.fromDegrees(angleMotor.getSelectedSensorPosition() / constants.steeringDegreesToTicks));
+            Rotation2d.fromDegrees((angleMotor.getSelectedSensorPosition() / constants.steeringDegreesToTicks) % 360));
     }
 
     /** Stops all motors from running. */
