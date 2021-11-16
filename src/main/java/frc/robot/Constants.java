@@ -4,7 +4,7 @@
 
 package frc.robot;
 
-import edu.wpi.first.wpilibj.geometry.Translation2d;
+import com.swervedrivespecialties.swervelib.SdsModuleConfigurations;
 
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide
@@ -17,54 +17,20 @@ import edu.wpi.first.wpilibj.geometry.Translation2d;
  * wherever the constants are needed, to reduce verbosity.
  */
 public final class Constants {
-    
-
     public static final class SwerveConstants {
-        /** Represents the offset from the centre of the robot, in metres. */
-        public final Translation2d position;
-
-        /**
-         * Stores the angle offset of this particular swerve module, in degrees. This
-         * will be used to compensate for the different "zero" angles of the encoders.
-         * 
-         * To calibrate this value, manually rotate each module to be facing the same
-         * direction. When they are all aligned,
-         */
-        public final double calibration;
-
-        /** The CAN address of the module's angle motor. */
-        public final int angleMotor;
-        /** The CAN address of the module's drive motor. */
-        public final int driveMotor;
-
-        public final double CPR = 2048; // Encoder ticks per wheel rotation
-        public final double WHEEL_DIAMETER = 101.6; // Wheel diameter in millimeters
-        public final double MM_PER_TICK = WHEEL_DIAMETER * 3.141592 / CPR; // Wheel distance traveled per encoder tick in millimeters
-        public final double METERS_TO_TICKS = (1 / MM_PER_TICK) * 1000; // Convert meters per second to ticks per second
-
-        // The number of ticks of the motor's built-in encoder per revolution of the steering module
-        public final double ticksPerSteeringRevolution = 26214.4;
-        // Convert degrees to motor ticks
-        public final double steeringDegreesToTicks = ticksPerSteeringRevolution / 360;
-
-        public SwerveConstants(Translation2d position, double calibration, int angleMotor, int driveMotor) {
-            this.position = position;
-            this.calibration = calibration;
-            this.angleMotor = angleMotor;
-            this.driveMotor = driveMotor;
-        }
+        public final int driveMotor[] = new int[]{4, 6, 2, 8};
+        public final int angleMotor[] = new int[]{3, 5, 1, 7};
+        public final double offset[] = new double[]{0, 0, 0, 0};
+        
+        public static final double trackwidth = 0.5588;
+        public static final double wheelbase = 0.5588;
+        public static final double maxVoltage = 12.0;
+        public static final double maxVelocity = 6380.0 / 60.0 * SdsModuleConfigurations.MK3_STANDARD.getDriveReduction() * SdsModuleConfigurations.MK3_STANDARD.getWheelDiameter() * Math.PI;
+        public static final double maxAngularVelocity = maxVelocity / Math.hypot(trackwidth / 2.0, wheelbase / 2.0);
     }
 
     public static final class MPUConstants{
         public final double calibration = 0;
         public final int address = 0x68;
-        public MPUConstants(){}
     }
-
-    public static final SwerveConstants swerveModules[] = new SwerveConstants[] {
-        new SwerveConstants(new Translation2d(-0.2794, -0.2794), 0, 8, 7),
-        new SwerveConstants(new Translation2d(0.2794, -0.2794), 0, 6, 5),
-        new SwerveConstants(new Translation2d(0.2794, 0.2794), 0, 4, 3),
-        new SwerveConstants(new Translation2d(-0.2794, 0.2794), 0, 2, 1),
-    };
 }
