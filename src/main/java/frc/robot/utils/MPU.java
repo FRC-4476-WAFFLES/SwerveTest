@@ -19,14 +19,6 @@ public class MPU {
     }
 
     public double getHeading(){
-        return yaw;
-    }
-
-    public Rotation2d getHeadingAsRotation2d(){
-        return Rotation2d.fromDegrees(yaw);
-    }
-
-    public void update(){
         byte[] byteArray = new byte[8];
         MPU.read(0x47, 8, byteArray);
         double raw = byteArray[0];
@@ -38,5 +30,21 @@ public class MPU {
             yaw += 360;
         }
         previousTime = timer.get();
+        return yaw;
+    }
+
+    public Rotation2d getHeadingAsRotation2d(){
+        byte[] byteArray = new byte[8];
+        MPU.read(0x47, 8, byteArray);
+        double raw = byteArray[0];
+        raw += 1;
+        yaw += 2 * raw * (timer.get() - previousTime);
+        if (yaw > 180){
+            yaw -= 360;
+        } else if (yaw < -180){
+            yaw += 360;
+        }
+        previousTime = timer.get();
+        return Rotation2d.fromDegrees(yaw);
     }
 }

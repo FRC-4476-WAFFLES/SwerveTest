@@ -54,7 +54,7 @@ public class SwerveModule {
         driveMotor.config_kP(0, 0.1);
         driveMotor.config_kI(0, 0);
         driveMotor.config_kD(0, 0.1);
-        angleMotor.config_kP(0, 0.5);
+        angleMotor.config_kP(0, 0.1);
         angleMotor.config_kI(0, 0);
         angleMotor.config_kD(0, 0.1);
     }
@@ -64,13 +64,14 @@ public class SwerveModule {
      * @param angle The direction to point the swerve module.
      * @param speed The speed of the drive motor. [Range 0..1]
      */
-    public void drive(double angle, double speed) {
-        driveMotor.set(ControlMode.Velocity, speed);
-        double currentAngle = getState().angle.getDegrees();
+    public void drive(SwerveModuleState state) {
+        SwerveModuleState optimizeTest = SwerveModuleState.optimize(state, getState().angle);
+        driveMotor.set(ControlMode.PercentOutput, optimizeTest.speedMetersPerSecond);
+        /*
         if (angle - currentAngle > 180){
             angle -= 360;
-        }
-        angleMotor.set(ControlMode.Position, angle * constants.steeringDegreesToTicks);
+        }*/
+        angleMotor.set(ControlMode.Position, optimizeTest.angle.getDegrees() * constants.steeringDegreesToTicks);
     }
 
     /**
@@ -79,9 +80,15 @@ public class SwerveModule {
      */
     
     public SwerveModuleState getState(){
+        double currentAngle = (angleMotor.getSelectedSensorPosition() / constants.steeringDegreesToTicks) % 360;
+        if (currentAngle < -180) {
+            currentAngle += 360;
+        } else if (currentAngle > 180) {
+            currentAngle -= 360;
+        }
         return new SwerveModuleState(
             driveMotor.getSelectedSensorVelocity() / constants.METERS_TO_TICKS, 
-            Rotation2d.fromDegrees((angleMotor.getSelectedSensorPosition() / constants.steeringDegreesToTicks) % 360));
+            Rotation2d.fromDegrees(currentAngle));
     }
 
     /** Stops all motors from running. */

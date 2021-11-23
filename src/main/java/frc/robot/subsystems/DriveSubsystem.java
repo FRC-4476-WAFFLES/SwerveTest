@@ -4,8 +4,8 @@
 
 package frc.robot.subsystems;
 
-import com.swervedrivespecialties.swervelib.Mk3SwerveModuleHelper;
-import com.swervedrivespecialties.swervelib.SwerveModule;
+import java.util.ArrayList;
+
 import edu.wpi.first.wpilibj.geometry.Pose2d;
 import edu.wpi.first.wpilibj.geometry.Translation2d;
 import edu.wpi.first.wpilibj.kinematics.ChassisSpeeds;
@@ -14,90 +14,76 @@ import edu.wpi.first.wpilibj.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.wpilibj.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
 import frc.robot.Constants.SwerveConstants;
 import frc.robot.utils.MPU;
+import frc.robot.utils.SwerveModule;
 
 public class DriveSubsystem extends SubsystemBase {
-  SwerveConstants swerveConstants = new SwerveConstants();
+  /** The array of swerve modules on the robot. */
+  private final SwerveModule[] modules;
 
-  public final SwerveDriveKinematics kinematics = new SwerveDriveKinematics(
-    // Front left
-    new Translation2d(SwerveConstants.trackwidth / 2.0, SwerveConstants.wheelbase / 2.0),
-    // Front right
-    new Translation2d(SwerveConstants.trackwidth / 2.0, -SwerveConstants.wheelbase / 2.0),
-    // Back left
-    new Translation2d(-SwerveConstants.trackwidth / 2.0, SwerveConstants.wheelbase / 2.0),
-    // Back right
-    new Translation2d(-SwerveConstants.trackwidth / 2.0, -SwerveConstants.wheelbase / 2.0)
-  );
+  /** Allows us to calculate the swerve module states from a chassis motion. */
+  public final SwerveDriveKinematics kinematics;
+  private final SwerveDriveOdometry odometry;
 
   private MPU gyro = new MPU();
 
-  /** Allows us to calculate the swerve module states from a chassis motion. */
-  private final SwerveDriveOdometry odometry = new SwerveDriveOdometry(kinematics, gyro.getHeadingAsRotation2d(), new Pose2d());
-
-  private final SwerveModule frontLeftModule;
-  private final SwerveModule frontRightModule;
-  private final SwerveModule backLeftModule;
-  private final SwerveModule backRightModule;
-
   public DriveSubsystem() {
-    frontLeftModule = Mk3SwerveModuleHelper.createFalcon500(
-      Mk3SwerveModuleHelper.GearRatio.STANDARD,
-      swerveConstants.driveMotor[0],
-      swerveConstants.angleMotor[0],
-      swerveConstants.angleMotor[0],
-      swerveConstants.offset[0]
-      );
+    ArrayList<Translation2d> positions = new ArrayList<Translation2d>();
+    ArrayList<SwerveModule> modules = new ArrayList<SwerveModule>();
 
-    // We will do the same for the other modules
-    frontRightModule = Mk3SwerveModuleHelper.createFalcon500(
-      Mk3SwerveModuleHelper.GearRatio.STANDARD,
-      swerveConstants.driveMotor[1],
-      swerveConstants.angleMotor[1],
-      swerveConstants.angleMotor[1],
-      swerveConstants.offset[1]
-    );
+    // Initialize each swerve module with its constants.
+    for (SwerveConstants module : Constants.swerveModules) {
+      modules.add(new SwerveModule(module));
+      positions.add(module.position);
+    }
 
-    backLeftModule = Mk3SwerveModuleHelper.createFalcon500(
-      Mk3SwerveModuleHelper.GearRatio.STANDARD,
-      swerveConstants.driveMotor[2],
-      swerveConstants.angleMotor[2],
-      swerveConstants.angleMotor[2],
-      swerveConstants.offset[2]
-    );
+    // Set up the kinematics and odometry.
+    Translation2d[] positionArry = new Translation2d[positions.size()];
+    for(int x = 0; x < positions.size(); x++){
+      positionArry[x] = positions.get(x);
+    }
 
-    backRightModule = Mk3SwerveModuleHelper.createFalcon500(
-      Mk3SwerveModuleHelper.GearRatio.STANDARD,
-      swerveConstants.driveMotor[3],
-      swerveConstants.angleMotor[3],
-      swerveConstants.angleMotor[3],
-      swerveConstants.offset[3]
-    );
+    SwerveModule[] moduleArray = new SwerveModule[modules.size()];
+    for (int x = 0; x < modules.size(); x++){
+      moduleArray[x] = modules.get(x);
+    }
+    this.kinematics = new SwerveDriveKinematics(positionArry);
+    this.modules = moduleArray;
+    this.odometry = new SwerveDriveOdometry(kinematics, gyro.getHeadingAsRotation2d());
+
+    // Set the default command to the teleoperated command.
+    
   }
 
   /** This method will be called once per scheduler run. */
   @Override
   public void periodic() {
-    gyro.update();
+    SwerveModuleState[] moduleStates = new SwerveModuleState[4];
+    for(int x=0; x<modules.length; x++){
+      moduleStates[x] = modules[x].getState();
+    }
+    odometry.update(gyro.getHeadingAsRotation2d(), moduleStates);
+    SmartDashboard.putNumber("X location", odometry.getPoseMeters().getX());
+    SmartDashboard.putNumber("Y location", odometry.getPoseMeters().getY());
   }
 
   public void robotDrive(double forward, double right, double rotation, boolean fieldCentric){
     ChassisSpeeds chassisSpeeds;
 
-    if (Math.abs(forward) < .05){
+    if (Math.abs(forward) < .1){
       forward = 0;
     }
-    if(Math.abs(right) < .05){
+    if(Math.abs(right) < .1){
       right = 0;
     }
-    if(Math.abs(rotation) < .05){
+    if(Math.abs(rotation) < .1){
       rotation = 0;
     }
-
-    forward *= -1;
-    right *= -1;
-    rotation *= -1;
+    forward /= -1;
+    right /= -1;
+    rotation /= -1;
 
     if (fieldCentric){
       chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(forward, right, rotation, gyro.getHeadingAsRotation2d());
@@ -106,19 +92,15 @@ public class DriveSubsystem extends SubsystemBase {
     }
     
     SwerveModuleState[] swerveModuleState = kinematics.toSwerveModuleStates(chassisSpeeds);
-    setModuleStates(swerveModuleState);
     SmartDashboard.putNumber("Gyro", gyro.getHeading());
-    SmartDashboard.putNumber("FL Commanded Speed", swerveModuleState[0].speedMetersPerSecond);
-    SmartDashboard.putNumber("FL Actual Speed", frontLeftModule.getDriveVelocity());
+    setModuleStates(swerveModuleState);
   }
 
   public void setModuleStates(SwerveModuleState[] swerveModuleStates){
-    SwerveDriveKinematics.normalizeWheelSpeeds(swerveModuleStates, SwerveConstants.maxVelocity);
+    for(int x=0; x<modules.length; x++){
+      modules[x].drive(swerveModuleStates[x]);
 
-    frontLeftModule.set(swerveModuleStates[0].speedMetersPerSecond / SwerveConstants.maxVelocity * SwerveConstants.maxVoltage, swerveModuleStates[0].angle.getRadians());
-    frontRightModule.set(swerveModuleStates[1].speedMetersPerSecond / SwerveConstants.maxVelocity * SwerveConstants.maxVoltage, swerveModuleStates[1].angle.getRadians());
-    backLeftModule.set(swerveModuleStates[2].speedMetersPerSecond / SwerveConstants.maxVelocity * SwerveConstants.maxVoltage, swerveModuleStates[2].angle.getRadians());
-    backRightModule.set(swerveModuleStates[3].speedMetersPerSecond / SwerveConstants.maxVelocity * SwerveConstants.maxVoltage, swerveModuleStates[3].angle.getRadians());
+    }
   }
 
   public Pose2d getOdometryLocation(){
@@ -127,10 +109,9 @@ public class DriveSubsystem extends SubsystemBase {
 
   /** Stop all motors from running. */
   public void stop() {
-    frontLeftModule.set(0, frontLeftModule.getSteerAngle());
-    frontRightModule.set(0, frontRightModule.getSteerAngle());
-    backLeftModule.set(0, backRightModule.getSteerAngle());
-    backRightModule.set(0, backRightModule.getSteerAngle());
+    for (SwerveModule module : modules) {
+      module.stop();
+    }
   }
 
   /** This method will be called once per scheduler run during simulation */
