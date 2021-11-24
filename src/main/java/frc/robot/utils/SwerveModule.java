@@ -11,6 +11,8 @@ import com.ctre.phoenix.motorcontrol.StatorCurrentLimitConfiguration;
 import com.ctre.phoenix.motorcontrol.VelocityMeasPeriod;
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
 
+import edu.wpi.first.wpilibj.controller.PIDController;
+import edu.wpi.first.wpilibj.geometry.Pose2d;
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.kinematics.SwerveModuleState;
 import frc.robot.Constants.SwerveConstants;
@@ -64,14 +66,15 @@ public class SwerveModule {
      * @param angle The direction to point the swerve module.
      * @param speed The speed of the drive motor. [Range 0..1]
      */
-    public void drive(SwerveModuleState state) {
-        SwerveModuleState optimizeTest = SwerveModuleState.optimize(state, getState().angle);
+    public void drive(SwerveModuleState desired) {
+        double current = angleMotor.getSelectedSensorPosition() / constants.steeringDegreesToTicks;
+        SwerveModuleState optimizeTest = SwerveModuleState.optimize(desired, Rotation2d.fromDegrees(current));
         driveMotor.set(ControlMode.PercentOutput, optimizeTest.speedMetersPerSecond);
-        /*
-        if (angle - currentAngle > 180){
-            angle -= 360;
-        }*/
-        angleMotor.set(ControlMode.Position, optimizeTest.angle.getDegrees() * constants.steeringDegreesToTicks);
+
+        // The minus function will currently give you an angle from -180 to 180.
+        // If future library versions change this, this code will no longer work.
+        double angle = current + optimizeTest.angle.minus(Rotation2d.fromDegrees(current)).getDegrees();
+        angleMotor.set(ControlMode.Position, angle * constants.steeringDegreesToTicks);
     }
 
     /**
