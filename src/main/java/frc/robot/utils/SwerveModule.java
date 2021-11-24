@@ -51,28 +51,29 @@ public class SwerveModule {
         driveMotor.setNeutralMode(NeutralMode.Brake);
         angleMotor.setNeutralMode(NeutralMode.Brake);
 
-        driveMotor.config_kP(0, 0.1);
+        driveMotor.config_kP(0, 0);
         driveMotor.config_kI(0, 0);
-        driveMotor.config_kD(0, 0.1);
-        angleMotor.config_kP(0, 0.1);
+        driveMotor.config_kD(0, 0);
+        driveMotor.config_kF(0, 1023 / SwerveConstants.maxAttainableSpeedMetersPerSecond * constants.metersPerSecondToTicksPer100ms); // TODO: tune PIDF for drive motor
+
+        angleMotor.config_kP(0, 0.2);
         angleMotor.config_kI(0, 0);
         angleMotor.config_kD(0, 0.1);
     }
 
     /** Drives the swerve module in a direction at a speed.
      * 
-     * @param angle The direction to point the swerve module.
-     * @param speed The speed of the drive motor. [Range 0..1]
+     * @param desired Desired state of the swerve module
      */
     public void drive(SwerveModuleState desired) {
-        double current = angleMotor.getSelectedSensorPosition() / constants.steeringDegreesToTicks;
-        SwerveModuleState optimizeTest = SwerveModuleState.optimize(desired, Rotation2d.fromDegrees(current));
-        driveMotor.set(ControlMode.PercentOutput, optimizeTest.speedMetersPerSecond);
-
+        double currentAngle = angleMotor.getSelectedSensorPosition() / constants.steeringDegreesToTicks;
+        SwerveModuleState optimizedState = SwerveModuleState.optimize(desired, Rotation2d.fromDegrees(currentAngle));
+        driveMotor.set(ControlMode.Velocity, optimizedState.speedMetersPerSecond * constants.metersPerSecondToTicksPer100ms);
         // The minus function will currently give you an angle from -180 to 180.
         // If future library versions change this, this code will no longer work.
-        double angle = current + optimizeTest.angle.minus(Rotation2d.fromDegrees(current)).getDegrees();
-        angleMotor.set(ControlMode.Position, angle * constants.steeringDegreesToTicks);
+        double targetAngle = currentAngle + optimizedState.angle.minus(Rotation2d.fromDegrees(currentAngle)).getDegrees();
+        angleMotor.set(ControlMode.Position, targetAngle * constants.steeringDegreesToTicks);
+        // TODO: compensate for wheel rotation when steering
     }
 
     /**
@@ -88,7 +89,7 @@ public class SwerveModule {
             currentAngle -= 360;
         }
         return new SwerveModuleState(
-            driveMotor.getSelectedSensorVelocity() / constants.METERS_TO_TICKS, 
+            driveMotor.getSelectedSensorVelocity() / constants.metersPerSecondToTicksPer100ms, 
             Rotation2d.fromDegrees(currentAngle));
     }
 
