@@ -66,14 +66,26 @@ public class SwerveModule {
      * @param desired Desired state of the swerve module
      */
     public void drive(SwerveModuleState desired) {
-        double currentAngle = angleMotor.getSelectedSensorPosition() / constants.steeringDegreesToTicks;
+        double currentAngleRaw = angleMotor.getSelectedSensorPosition() / constants.steeringDegreesToTicks;
+        double currentAngleVelocityRaw = angleMotor.getSelectedSensorVelocity();
+
+        double currentAngle = currentAngleRaw % 360;
+        if (currentAngle < -180) {
+            currentAngle += 360;
+        } else if (currentAngle > 180) {
+            currentAngle -= 360;
+        }
+
+        double velocityOffset = currentAngleVelocityRaw * constants.steeringThingy;
+
         SwerveModuleState optimizedState = SwerveModuleState.optimize(desired, Rotation2d.fromDegrees(currentAngle));
-        driveMotor.set(ControlMode.Velocity, optimizedState.speedMetersPerSecond * constants.metersPerSecondToTicksPer100ms);
+        
         // The minus function will currently give you an angle from -180 to 180.
         // If future library versions change this, this code will no longer work.
-        double targetAngle = currentAngle + optimizedState.angle.minus(Rotation2d.fromDegrees(currentAngle)).getDegrees();
+        double targetAngle = currentAngleRaw + optimizedState.angle.minus(Rotation2d.fromDegrees(currentAngleRaw)).getDegrees();
+
         angleMotor.set(ControlMode.Position, targetAngle * constants.steeringDegreesToTicks);
-        // TODO: compensate for wheel rotation when steering
+        driveMotor.set(ControlMode.Velocity, optimizedState.speedMetersPerSecond * constants.metersPerSecondToTicksPer100ms - velocityOffset);
     }
 
     /**

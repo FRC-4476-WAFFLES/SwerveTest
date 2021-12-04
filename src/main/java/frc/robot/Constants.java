@@ -40,9 +40,17 @@ public final class Constants {
         public final double CPR = 2048; // Encoder ticks per motor rotation
         public final double wheelDiameter = 0.1016; // Wheel diameter in meters
         public final double wheelCircumfrence = wheelDiameter * Math.PI; // Wheel circumfrence in meters
-        public final double gearRatio = 8.16; // Drive gear ratio
+
+        public final double firstStageRatio = 14/50;
+        public final double secondStageRatio = 28/16;
+        public final double thirdStageRatio = 15/60;
+        public final double driveOverallRatio = 1 / (firstStageRatio * secondStageRatio * thirdStageRatio); // Drive gear ratio
+
+        public final double steeringRatio = 12.8;
+
+        public final double steeringThingy = 1 / (firstStageRatio * secondStageRatio * steeringRatio); // TODO: name this something more understandable
         
-        public final double metersPerSecondToTicksPer100ms = CPR * gearRatio / wheelCircumfrence / 10;
+        public final double metersPerSecondToTicksPer100ms = CPR * driveOverallRatio / wheelCircumfrence / 10;
 
         public static final double maxAttainableSpeedMetersPerSecond = 4;
 
