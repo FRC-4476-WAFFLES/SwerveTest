@@ -92,7 +92,7 @@ public class DriveSubsystem extends SubsystemBase {
     }
     
     SwerveModuleState[] swerveModuleState = kinematics.toSwerveModuleStates(chassisSpeeds);
-    SwerveDriveKinematics.normalizeWheelSpeeds(swerveModuleState, SwerveConstants.maxAttainableSpeedMetersPerSecond);
+    SwerveDriveKinematics.normalizeWheelSpeeds(swerveModuleState, 1);
     SmartDashboard.putNumber("Gyro", gyro.getHeading());
     setModuleStates(swerveModuleState);
   }

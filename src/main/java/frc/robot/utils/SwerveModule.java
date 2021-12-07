@@ -51,11 +51,6 @@ public class SwerveModule {
         driveMotor.setNeutralMode(NeutralMode.Brake);
         angleMotor.setNeutralMode(NeutralMode.Brake);
 
-        driveMotor.config_kP(0, 0);
-        driveMotor.config_kI(0, 0);
-        driveMotor.config_kD(0, 0);
-        driveMotor.config_kF(0, 1023 / SwerveConstants.maxAttainableSpeedMetersPerSecond * constants.metersPerSecondToTicksPer100ms); // TODO: tune PIDF for drive motor
-
         angleMotor.config_kP(0, 0.2);
         angleMotor.config_kI(0, 0);
         angleMotor.config_kD(0, 0.1);
@@ -67,7 +62,7 @@ public class SwerveModule {
      */
     public void drive(SwerveModuleState desired) {
         double currentAngleRaw = angleMotor.getSelectedSensorPosition() / constants.steeringDegreesToTicks;
-        double currentAngleVelocityRaw = angleMotor.getSelectedSensorVelocity();
+        //double currentAngleVelocityRaw = angleMotor.getSelectedSensorVelocity();
 
         double currentAngle = currentAngleRaw % 360;
         if (currentAngle < -180) {
@@ -76,7 +71,7 @@ public class SwerveModule {
             currentAngle -= 360;
         }
 
-        double velocityOffset = currentAngleVelocityRaw * constants.steeringThingy;
+        //double velocityOffset = currentAngleVelocityRaw * constants.steeringThingy;
 
         SwerveModuleState optimizedState = SwerveModuleState.optimize(desired, Rotation2d.fromDegrees(currentAngle));
         
@@ -85,7 +80,8 @@ public class SwerveModule {
         double targetAngle = currentAngleRaw + optimizedState.angle.minus(Rotation2d.fromDegrees(currentAngleRaw)).getDegrees();
 
         angleMotor.set(ControlMode.Position, targetAngle * constants.steeringDegreesToTicks);
-        driveMotor.set(ControlMode.Velocity, optimizedState.speedMetersPerSecond * constants.metersPerSecondToTicksPer100ms - velocityOffset);
+        //driveMotor.set(ControlMode.Velocity, optimizedState.speedMetersPerSecond * constants.metersPerSecondToTicksPer100ms);
+        driveMotor.set(ControlMode.PercentOutput, optimizedState.speedMetersPerSecond);
     }
 
     /**
